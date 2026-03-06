@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FormData | My First Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; background-color: white; color: black; width: 100%; }
+        .hero-title { font-size: clamp(2.5rem, 10vw, 5rem); line-height: 0.9; }
+        .page-section { animation: fadeIn 0.5s ease-out; width: 100%; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #000; }
+        input { font-size: 16px !important; }
+        .status-pulse { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+        .offline { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        .tech-icon { font-size: 1.8rem; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .tech-icon:hover { transform: scale(1.2) rotate(5deg); }
+        .python:hover { color: #3776ab; } .js:hover { color: #f7df1e; } .html:hover { color: #e34f26; } .java:hover { color: #007396; }
+        #sideMenu { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); background-color: white !important; border-left: 1px solid #e5e7eb; width: 80%; max-width: 300px; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 90%; }
+        .premium-toast { background: black; color: white; padding: 12px 24px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 1rem; }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <nav class="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b z-50 px-4 md:px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-extrabold tracking-tighter italic">FORMDATA.</h1>
+            <div id="brainStatus" class="flex items-center text-[8px] font-bold uppercase tracking-widest text-gray-400 border px-2 py-1 rounded-full">
+                <span class="status-pulse offline" id="pulse"></span> <span id="statusText">Offline</span>
+            </div>
+        </div>
+        <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="menu" class="w-6 h-6"></i></button>
+    </nav>
+
+    <div id="sideMenu" class="fixed inset-y-0 right-0 z-[60] translate-x-full p-8 flex flex-col shadow-2xl">
+        <button id="closeBtn" class="self-end text-black"><i data-lucide="x" class="w-8 h-8"></i></button>
+        <div class="flex flex-col gap-6 text-black mt-10">
+            <a href="#" onclick="showPage('home')" class="text-2xl font-bold tracking-tighter">HOME</a>
+            <a href="#" onclick="showPage('auth')" id="authLink" class="text-2xl font-bold tracking-tighter">GET STARTED</a>
+            <a href="#" onclick="showPage('account')" class="text-2xl font-bold tracking-tighter">ACCOUNT</a>
+            <a href="#" onclick="showPage('forms')" class="text-2xl font-bold tracking-tighter">FORMS DATA</a>
+            <button onclick="logout()" class="text-left text-red-500 font-bold mt-4 text-[10px] uppercase">Logout</button>
+        </div>
+    </div>
+
+    <main class="mt-28 px-4 md:px-6 max-w-5xl mx-auto min-h-screen">
+        <section id="homePage" class="page-section">
+            <div class="py-10 text-center md:text-left">
+                <span class="text-[9px] border px-2 py-1 rounded-full uppercase font-bold border-black">Backend Service</span>
+                <h2 class="hero-title font-extrabold mt-6 italic uppercase">My First Project<br>is Live.</h2>
+                <p class="mt-6 text-gray-500 max-w-md text-[11px] md:text-[12px] uppercase leading-relaxed mx-auto md:mx-0">Generate a unique API key and instantly stream your website's data to our dashboard.</p>
+                <button onclick="showPage('auth')" class="mt-8 bg-black text-white px-8 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest">Create Project Now</button>
+            </div>
+        </section>
+
+        <section id="authPage" class="page-section hidden">
+            <div class="max-w-sm mx-auto pt-5">
+                <h2 id="authTitle" class="text-3xl font-black mb-6 uppercase italic text-center">Signup</h2>
+                <div class="flex flex-col gap-4">
+                    <input id="authEmail" type="email" placeholder="Enter Email" class="border p-4 rounded-xl text-sm outline-none bg-gray-50 focus:border-black transition-all">
+                    <input id="authPass" type="password" placeholder="Enter Password" class="border p-4 rounded-xl text-sm outline-none bg-gray-50 focus:border-black transition-all">
+                    <button id="authBtn" onclick="handleAuth()" class="bg-black text-white p-4 rounded-xl text-[10px] font-bold uppercase tracking-widest">Proceed</button>
+                    <p onclick="toggleAuthMode()" id="authToggle" class="text-center text-[10px] text-gray-400 cursor-pointer uppercase tracking-widest hover:text-black mt-4 font-bold">Already have an account? Login</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="accountPage" class="page-section hidden">
+            <h2 class="text-2xl font-black mb-6 italic uppercase">Account Control</h2>
+            <div class="space-y-4">
+                <div class="p-6 bg-black text-white rounded-[1.5rem]">
+                    <p class="text-[9px] text-blue-400 uppercase tracking-widest mb-2 font-bold">Your Endpoint (POST Data Here)</p>
+                    <div class="flex flex-col gap-4">
+                        <code id="apiKeyDisplay" class="text-[11px] md:text-sm font-mono font-bold break-all text-green-400 bg-white/5 p-3 rounded-lg border border-white/10">Loading...</code>
+                        <button onclick="copyKey()" class="w-fit text-[9px] bg-white text-black px-6 py-2 rounded-full font-bold uppercase hover:bg-gray-200 transition-all">Copy URL</button>
+                    </div>
+                </div>
+                <div class="p-4 border rounded-xl flex justify-between items-center bg-white">
+                    <div>
+                        <p class="text-[8px] text-gray-400 uppercase">Logged in as</p>
+                        <p id="userEmail" class="text-xs font-bold">---</p>
+                    </div>
+                    <i data-lucide="shield-check" class="w-5 h-5 opacity-40"></i>
+                </div>
+            </div>
+        </section>
+
+        <section id="formsPage" class="page-section hidden">
+            <h2 class="text-2xl font-black mb-4 italic uppercase">Live Data Hub</h2>
+            <div class="table-wrap border bg-white">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b">
+                        <tr class="text-[8px] text-gray-400 uppercase font-black">
+                            <th class="p-4">User Package</th>
+                            <th class="p-4 text-right">Timestamp / Hub</th>
+                        </tr>
+                    </thead>
+                    <tbody id="visitorDataTable" class="text-[11px] divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-20 bg-black text-white px-6 py-16">
+        <div class="max-w-5xl mx-auto flex flex-col items-center text-center">
+            <h3 class="text-2xl font-black tracking-tighter mb-4 italic uppercase">FormData Premium.</h3>
+            <p class="text-[10px] text-gray-500 max-w-sm mb-10 uppercase tracking-[0.2em] font-bold">The industry standard for rapid backend deployment.</p>
+            <div class="flex gap-10 mb-12 items-center grayscale opacity-60 hover:grayscale-0 transition-all">
+                <i class="fa-brands fa-python tech-icon python"></i>
+                <i class="fa-brands fa-js tech-icon js"></i>
+                <i class="fa-brands fa-html5 tech-icon html"></i>
+                <i class="fa-brands fa-java tech-icon java"></i>
+            </div>
+            <div class="w-full border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-[9px] font-black tracking-[0.4em] text-gray-600 uppercase">Engineered for Excellence</div>
+                <div class="text-[9px] text-gray-500 tracking-widest uppercase font-bold italic">© 2026 FORMDATA // MOBILE OPTIMIZED</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        function showPremiumToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'premium-toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        const BRAIN_CONFIG = { API_BASE: window.location.origin.includes('file') ? 'http://127.0.0.1:5000' : window.location.origin, SYNC_INTERVAL: 5000 };
+        const sideMenu = document.getElementById('sideMenu');
+        const menuBtn = document.getElementById('menuBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        menuBtn.onclick = () => sideMenu.classList.remove('translate-x-full');
+        closeBtn.onclick = () => sideMenu.classList.add('translate-x-full');
+        
+        let isLoginMode = false;
+        let activePage = 'home';
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? "Login" : "Signup";
+            document.getElementById('authToggle').innerText = isLoginMode ? "Need an account? Signup" : "Already have an account? Login";
+        }
+
+        async function runBrainCheck() {
+            try {
+                const response = await fetch(`${BRAIN_CONFIG.API_BASE}/get_data/ping`);
+                if(response.ok) { updateStatus(true); if (activePage === 'forms') refreshTable(); }
+                else updateStatus(false);
+            } catch (e) { updateStatus(false); }
+        }
+
+        function updateStatus(online) {
+            const pulse = document.getElementById('pulse');
+            const statusText = document.getElementById('statusText');
+            pulse.className = online ? "status-pulse online" : "status-pulse offline";
+            statusText.innerText = online ? "Online" : "Offline";
+        }
+        setInterval(runBrainCheck, BRAIN_CONFIG.SYNC_INTERVAL);
+
+        function showPage(pageId) {
+            if((pageId === 'account' || pageId === 'forms') && !localStorage.getItem('formData_User')) {
+                showPremiumToast("Login First");
+                pageId = 'auth';
+            }
+            activePage = pageId;
+            document.querySelectorAll('.page-section').forEach(p => p.classList.add('hidden'));
+            document.getElementById(pageId + 'Page').classList.remove('hidden');
+            sideMenu.classList.add('translate-x-full');
+            if (pageId === 'forms') refreshTable();
+            window.scrollTo(0,0);
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPass').value;
+            if(!email || !pass) return showPremiumToast("Fill Fields");
+            const url = isLoginMode ? `${BRAIN_CONFIG.API_BASE}/login` : `${BRAIN_CONFIG.API_BASE}/signup`;
+            try {
+                const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email, password: pass }) });
+                const data = await res.json();
+                if (res.ok) { localStorage.setItem('formData_User', JSON.stringify(data)); location.reload(); }
+                else showPremiumToast(data.error);
+            } catch (e) { showPremiumToast("Server Error"); }
+        }
+
+        async function refreshTable() {
+            const user = JSON.parse(localStorage.getItem('formData_User'));
+            if (!user) return;
+            try {
+                const res = await fetch(`${BRAIN_CONFIG.API_BASE}/get_data/${user.api_key}`);
+                const data = await res.json();
+                const table = document.getElementById('visitorDataTable');
+                table.innerHTML = data.map(item => `
+                    <tr>
+                        <td class="p-4"><b>${item.email}</b><br><span class="text-blue-600 font-mono">${item.password}</span></td>
+                        <td class="p-4 text-right text-[9px] uppercase font-bold text-gray-400">${item.time}<br>${item.country || 'HUB'}</td>
+                    </tr>
+                `).join('') || '<tr><td colspan="2" class="p-10 text-center opacity-30">NO DATA STREAMING</td></tr>';
+            } catch (e) {}
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+        
+        function copyKey() {
+            const keyUrl = document.getElementById('apiKeyDisplay').innerText;
+            if(!keyUrl.includes("Loading")) {
+                navigator.clipboard.writeText(keyUrl);
+                showPremiumToast("URL Copied to Clipboard");
+            }
+        }
+
+        const user = JSON.parse(localStorage.getItem('formData_User'));
+        if(user) {
+            document.getElementById('userEmail').innerText = user.email;
+            // YAHAN AAPKA DEMANDED FULL URL BAN RAHA HAI
+            document.getElementById('apiKeyDisplay').innerText = `${BRAIN_CONFIG.API_BASE}/send_data/${user.api_key}`;
+            document.getElementById('authLink').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
